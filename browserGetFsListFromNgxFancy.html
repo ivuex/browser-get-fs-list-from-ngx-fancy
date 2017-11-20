@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BrowserReadFsFromNgxFancy</title>
+</head>
+<body>
+<p>
+Next, I am going to render directory list according the reponse of nginx-fancy, just in browser.
+</p>
+<ul id="bookList"></ul>
+</body>
+</html>
+<script>
+  let fsTableStr = '';
+  let fdList = [];
+  const xhr = new XMLHttpRequest();
+  const uri = 'http://localhost:7701/';
+  xhr.open('GET', uri, true);
+  const bookListEle = document.getElementById('bookList');
+
+  xhr.onload = function () {
+    // console.log(typeof xhr.responseText);
+    // console.log('above is the "typeof xhr.responseText", is it string?');
+    fsTableStr = xhr.responseText;
+
+    const tbobyStr = fsTableStr.match(/<tbody>[\s\S]+<\/tbody>/g)[0];
+
+    tbobyStr.replace(/<a href="([^"']+)">/g, function () {
+      // console.log(arguments);
+      fdList.push(arguments[1]);
+    });
+    // console.log(fdList);
+    bookListInnerHtml = fdList.map(function (item) {
+      if(['.', '..', './', '../'].indexOf(item) !== -1) return void 0;
+      if(/\/$/.test(item)){
+        return `<li>
+                  <a href="../${item}">
+                    ${item}
+                  </a>
+                </li>`;
+      }
+    }).join('');
+    // console.log(bookListInnerHtml);
+    bookListEle.innerHTML = bookListInnerHtml;
+  };
+
+  xhr.send(null);
+</script>
